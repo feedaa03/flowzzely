@@ -11,7 +11,8 @@ import SwiftUI
 struct FlowzzleyApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            StartView()
         }
     }
 }
+
