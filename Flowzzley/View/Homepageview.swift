@@ -10,7 +10,7 @@ struct FlowerCard: View {
             .frame(width: 140, height: 140)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
+                    .fill(Color("Color card"))
             )
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
@@ -31,8 +31,8 @@ struct HomepageView: View {
 
                 // Title
                 Text("Guess the flower from the picture")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 16, weight: .regular, design: .serif))
+                    .foregroundStyle(Color .color)
                     .padding(.top, 24)
 
                 // Cards grid
@@ -47,7 +47,10 @@ struct HomepageView: View {
                         FlowerCard(imageName: "sunflower blur")
                     }
 
-                    FlowerCard(imageName: "tulip blur")
+                    HStack(spacing: 16) {
+                        FlowerCard(imageName: "tulip blur")
+                        FlowerCard(imageName: "lavender blur")
+                    }
                 }
                 .padding()
 
@@ -60,4 +63,3 @@ struct HomepageView: View {
 #Preview {
     HomepageView()
 }
-
