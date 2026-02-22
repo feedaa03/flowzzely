@@ -4,7 +4,9 @@ import SwiftUI
 struct FlowzzleyApp: App {
     var body: some Scene {
         WindowGroup {
-            HomepageView()
+            NavigationStack {
+                StartView()
+            }
         }
     }
 }
