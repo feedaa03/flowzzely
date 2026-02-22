@@ -1,65 +1,60 @@
 import SwiftUI
 
-struct FlowerCard: View {
-    let imageName: String
-
-    var body: some View {
-        Image(imageName)
-            .resizable()
-            .scaledToFill()
-            .frame(width: 140, height: 140)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color("Color card"))
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-    }
-}
-
 struct HomepageView: View {
+
+    @State private var selectedFlower: FlowerType?
+    @State private var showPuzzle = false
+
     var body: some View {
-        ZStack {
-            // Background
-            Image("fb")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Image("fb")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
 
-            VStack {
-                Spacer(minLength: 80)
+                VStack(spacing: 24) {
+                    Text("Guess the flower from the picture")
+                        .font(.system(size: 16, design: .serif))
 
-                // Title
-                Text("Guess the flower from the picture")
-                    .font(.system(size: 16, weight: .regular, design: .serif))
-                    .foregroundStyle(Color .color)
-                    .padding(.top, 24)
-
-                // Cards grid
-                VStack(spacing: 16) {
-                    HStack(spacing: 16) {
-                        FlowerCard(imageName: "lily blur")
-                        FlowerCard(imageName: "orchid blur")
-                    }
-
-                    HStack(spacing: 16) {
-                        FlowerCard(imageName: "rose blur")
-                        FlowerCard(imageName: "sunflower blur")
-                    }
-
-                    HStack(spacing: 16) {
-                        FlowerCard(imageName: "tulip blur")
-                        FlowerCard(imageName: "lavender blur")
+                    LazyVGrid(columns: [GridItem(), GridItem()], spacing: 16) {
+                        ForEach(FlowerType.allCases, id: \.self) { flower in
+                            let unlocked = DailyProgressManager.shared.isUnlocked(flower)
+                            Button {
+                                if unlocked {
+                                    selectedFlower = flower
+                                    showPuzzle = true
+                                }
+                            } label: {
+                                ZStack {
+                                    FlowerCard(imageName: "\(flower.rawValue) blur")
+                                    if !unlocked {
+                                        Circle()
+                                            .fill(Color.black.opacity(0.35))
+                                            .overlay(
+                                                Image(systemName: "lock.fill")
+                                                    .font(.title)
+                                                    .foregroundColor(.white)
+                                            )
+                                    }
+                                }
+                            }
+                            .disabled(!unlocked)
+                        }
                     }
                 }
                 .padding()
-
-                Spacer()
+            }
+            .navigationDestination(isPresented: $showPuzzle) {
+                if let selectedFlower {
+                    PuzzleView(flower: selectedFlower)
+                }
             }
         }
     }
 }
 
+// MARK: - Preview
 #Preview {
     HomepageView()
 }

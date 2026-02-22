@@ -1,27 +1,56 @@
 import Foundation
+import SwiftUI
 internal import Combine
 
-final class PuzzleViewModel: ObservableObject {
+@MainActor
+class PuzzleViewModel: ObservableObject {
 
     @Published var pieces: [FlowerPuzzlePiece] = []
     @Published var selectedPiece: FlowerPuzzlePiece?
+    @Published var isSolved: Bool = false
 
-    func loadPuzzle(flower: FlowerType) {
+    let flower: FlowerType
+
+    init(flower: FlowerType) {
+        self.flower = flower
+        loadPuzzle()
+    }
+
+    func loadPuzzle() {
         selectedPiece = nil
+        isSolved = false
         pieces = flower.pieces.shuffled()
     }
 
     func tapPiece(_ piece: FlowerPuzzlePiece) {
-        guard let selected = selectedPiece else {
+        guard !isSolved else { return }
+
+        if let selected = selectedPiece {
+            swap(selected, piece)
+            selectedPiece = nil
+            checkIfSolved()
+        } else {
             selectedPiece = piece
-            return
+        }
+    }
+
+    private func swap(_ first: FlowerPuzzlePiece, _ second: FlowerPuzzlePiece) {
+        guard
+            let firstIndex = pieces.firstIndex(of: first),
+            let secondIndex = pieces.firstIndex(of: second)
+        else { return }
+
+        pieces.swapAt(firstIndex, secondIndex)
+    }
+
+    private func checkIfSolved() {
+        for index in pieces.indices {
+            if pieces[index].correctIndex != index {
+                return
+            }
         }
 
-        if let firstIndex = pieces.firstIndex(of: selected),
-           let secondIndex = pieces.firstIndex(of: piece) {
-            pieces.swapAt(firstIndex, secondIndex)
-        }
-
-        selectedPiece = nil
+        // ✅ إذا وصل هنا = الحل صحيح
+        isSolved = true
     }
 }

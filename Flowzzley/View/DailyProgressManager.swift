@@ -1,3 +1,11 @@
+//
+//  DailyProgressManager.swift
+//  Flowzzley
+//
+//  Created by Feda  on 22/02/2026.
+//
+
+
 import Foundation
 
 class DailyProgressManager {
@@ -12,11 +20,13 @@ class DailyProgressManager {
     }
 
     func isUnlocked(_ flower: FlowerType) -> Bool {
-        flower.order <= unlockedIndex
+        let order = FlowerType.allCases.firstIndex(of: flower) ?? 0
+        return order <= unlockedIndex
     }
 
     func markSolved(flower: FlowerType) {
-        if flower.order == unlockedIndex {
+        let order = FlowerType.allCases.firstIndex(of: flower) ?? 0
+        if order == unlockedIndex {
             UserDefaults.standard.set(unlockedIndex + 1, forKey: key)
         }
     }

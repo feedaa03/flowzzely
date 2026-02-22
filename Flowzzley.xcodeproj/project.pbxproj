@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		89484A902F4AABC00079F2C6 /* FlowzzleyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89484A8F2F4AABC00079F2C6 /* FlowzzleyApp.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		894847A52F3E44BC0079F2C6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		894847972F3E44BB0079F2C6 /* Flowzzley.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flowzzley.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		894847A42F3E44BC0079F2C6 /* FlowzzleyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowzzleyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		894847AE2F3E44BC0079F2C6 /* FlowzzleyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowzzleyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		89484A8F2F4AABC00079F2C6 /* FlowzzleyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowzzleyApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +84,7 @@
 				894847A72F3E44BC0079F2C6 /* FlowzzleyTests */,
 				894847B12F3E44BC0079F2C6 /* FlowzzleyUITests */,
 				894847982F3E44BB0079F2C6 /* Products */,
+				89484A8F2F4AABC00079F2C6 /* FlowzzleyApp.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89484A902F4AABC00079F2C6 /* FlowzzleyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
