@@ -38,19 +38,24 @@ class PuzzleViewModel: ObservableObject {
         guard
             let firstIndex = pieces.firstIndex(of: first),
             let secondIndex = pieces.firstIndex(of: second)
-        else { return }
-
+        else {
+            print("❌ swap فشل - ما لقى القطع")
+            return
+        }
+        print("✅ swap نجح: \(firstIndex) <-> \(secondIndex)")
         pieces.swapAt(firstIndex, secondIndex)
     }
 
-    private func checkIfSolved() {
+    func checkIfSolved() {
+        print("--- checkIfSolved ---")
         for index in pieces.indices {
+            print("Position \(index): \(pieces[index].imageName) | correctIndex: \(pieces[index].correctIndex)")
             if pieces[index].correctIndex != index {
+                print("❌ غلط في position \(index)")
                 return
             }
         }
-
-        // ✅ إذا وصل هنا = الحل صحيح
+        print("✅ SOLVED!")
         isSolved = true
     }
 }

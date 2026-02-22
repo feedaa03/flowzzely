@@ -2,18 +2,22 @@ import SwiftUI
 
 struct FlowerResultView: View {
     let flower: FlowerType
+    @State private var showConfetti = false
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) var dismiss
+
+    // عشان نرجع للهوم مباشرة
+    @EnvironmentObject var NavigationPath: NavigationPathManager
 
     var body: some View {
         ZStack {
-            // Soft blush background
-            Color(.colorCard)
+            (colorScheme == .dark ? Color(hex: "EFD7D5") : Color(hex: "#EDE0D9"))
                 .ignoresSafeArea()
+
             ScrollView {
                 VStack(spacing: 0) {
-                    // Main card — full blush-pink card matching Figma
                     VStack(spacing: 20) {
 
-                        // Title
                         Text(flower.displayTitle)
                             .font(.system(size: 22, weight: .regular, design: .serif))
                             .foregroundStyle(.color)
@@ -21,7 +25,6 @@ struct FlowerResultView: View {
                             .padding(.top, 24)
                             .padding(.horizontal, 20)
 
-                        // White image card
                         ZStack {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .fill(Color.white)
@@ -35,55 +38,139 @@ struct FlowerResultView: View {
                         }
                         .padding(.horizontal, 20)
 
-                        // Description
                         Text(flower.description)
                             .font(.system(size: 15))
                             .foregroundStyle(.color)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
 
-                        // Occasions section
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Occasions")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(Color.color)
+                                .foregroundStyle(.color)
 
                             FlexibleChipsView(items: flower.occasions) { occasion in
                                 Text(occasion)
                                     .font(.system(size: 14, weight: .regular))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.color)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 8)
                                     .background(
                                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .fill(Color.white)
+                                            .fill(colorScheme == .dark ? Color.white.opacity(0.25) : Color.color)
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                     )
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 24)
+                        .padding(.bottom, 16)
+
+                        // ✅ زر الهوم
+                        Button {
+                            navigationPath.path = []
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "house.fill")
+                                Text("Back to Home")
+                            }
+                            .font(.system(size: 16, weight: .medium, design: .serif))
+                            .foregroundColor(.color)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(Color.white.opacity(0.6))
+                            )
+                        }
+                        .padding(.horizontal, 24)
                         .padding(.bottom, 28)
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 28, style: .continuous)
-                            .fill(Color.ww)
+                            .fill(colorScheme == .dark ? Color(hex: "#EFD7D5") : Color(hex: "#EDE0D9"))
                     )
                     .padding(20)
                 }
+            }
+
+            if showConfetti {
+                GeometryReader { geo in
+                    ConfettiView(size: geo.size)
+                }
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            SoundManager.shared.playSuccess()
+            showConfetti = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                showConfetti = false
             }
         }
     }
 }
 
-// A lightweight flexible chips layout that wraps items onto multiple lines.
+// MARK: - Confetti
+struct ConfettiView: View {
+    let size: CGSize
+    @State private var particles: [ConfettiParticle] = []
+
+    var body: some View {
+        ZStack {
+            ForEach(particles) { p in
+                Circle()
+                    .fill(p.color)
+                    .frame(width: p.size, height: p.size)
+                    .position(x: p.x, y: p.y)
+                    .opacity(p.opacity)
+            }
+        }
+        .onAppear {
+            generateParticles()
+        }
+    }
+
+    func generateParticles() {
+        let colors: [Color] = [.pink, .purple, .yellow, .green, .blue, .orange, .red]
+        particles = (0..<80).map { i in
+            ConfettiParticle(
+                id: i,
+                x: CGFloat.random(in: 0...size.width),
+                y: CGFloat.random(in: -100...200),
+                size: CGFloat.random(in: 6...14),
+                color: colors.randomElement()!,
+                opacity: 1.0
+            )
+        }
+        withAnimation(.easeIn(duration: 2.5)) {
+            for i in particles.indices {
+                particles[i].y += size.height + 200
+                particles[i].x += CGFloat.random(in: -60...60)
+                particles[i].opacity = 0
+            }
+        }
+    }
+}
+
+struct ConfettiParticle: Identifiable {
+    let id: Int
+    var x: CGFloat
+    var y: CGFloat
+    var size: CGFloat
+    var color: Color
+    var opacity: Double
+}
+
+// MARK: - FlexibleChipsView
 struct FlexibleChipsView<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
     let items: Data
     let content: (Data.Element) -> Content
-
     @State private var totalHeight: CGFloat = .zero
 
     init(items: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
@@ -113,18 +200,12 @@ struct FlexibleChipsView<Data: RandomAccessCollection, Content: View>: View wher
                             height -= d.height
                         }
                         let result = width
-                        if item == items.last {
-                            width = 0
-                        } else {
-                            width -= d.width
-                        }
+                        if item == items.last { width = 0 } else { width -= d.width }
                         return result
                     }
                     .alignmentGuide(.top) { d in
                         let result = height
-                        if item == items.last {
-                            height = 0
-                        }
+                        if item == items.last { height = 0 }
                         return result
                     }
             }
@@ -136,9 +217,7 @@ struct FlexibleChipsView<Data: RandomAccessCollection, Content: View>: View wher
             }
         )
         .onPreferenceChange(ChipsSizePreferenceKey.self) { newHeight in
-            if totalHeight != newHeight {
-                totalHeight = newHeight
-            }
+            if totalHeight != newHeight { totalHeight = newHeight }
         }
     }
 }
@@ -152,7 +231,5 @@ private struct ChipsSizePreferenceKey: PreferenceKey {
 
 #Preview {
     FlowerResultView(flower: .lavender)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.4)) {}
-        }
+        .environmentObject(NavigationPathManager())
 }

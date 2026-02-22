@@ -4,18 +4,19 @@ struct HomepageView: View {
 
     @State private var selectedFlower: FlowerType?
     @State private var showPuzzle = false
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject private var navManager = NavigationPathManager()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navManager.path) {
             ZStack {
-                Image("fb")
-                    .resizable()
-                    .scaledToFill()
+                (colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9"))
                     .ignoresSafeArea()
 
                 VStack(spacing: 24) {
                     Text("Guess the flower from the picture")
                         .font(.system(size: 16, design: .serif))
+                        .foregroundStyle(colorScheme == .dark ? .white : .color)
 
                     LazyVGrid(columns: [GridItem(), GridItem()], spacing: 16) {
                         ForEach(FlowerType.allCases, id: \.self) { flower in
@@ -48,13 +49,14 @@ struct HomepageView: View {
             .navigationDestination(isPresented: $showPuzzle) {
                 if let selectedFlower {
                     PuzzleView(flower: selectedFlower)
+                        .environmentObject(navManager)
                 }
             }
         }
+        .environmentObject(navManager)
     }
 }
 
-// MARK: - Preview
 #Preview {
     HomepageView()
 }

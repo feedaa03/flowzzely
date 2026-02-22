@@ -1,20 +1,14 @@
-//
-//  ContentView.swift
-//  Flowzzley
-//
-//  Created by Feda  on 12/02/2026.
-//
-
 import SwiftUI
 
 struct StartView: View {
 
     @State private var goToHome = false
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("fb")
+                (colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9"))
                     .ignoresSafeArea()
 
                 VStack {
@@ -38,16 +32,15 @@ struct StartView: View {
                         goToHome = true
                     } label: {
                         Text("Get started")
-                            .foregroundStyle(.black)
+                            .foregroundStyle(colorScheme == .dark ? Color.white : Color.black)
                             .font(.system(size: 16))
                             .padding(.horizontal, 40)
                             .padding(.vertical, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
-                                    .fill(Color.pink.opacity(0.2))
+                                    .fill(colorScheme == .dark ? Color.white.opacity(0.2) : Color.pink.opacity(0.2))
                             )
-                            .shadow(color: .black.opacity(0.3),
-                                    radius: 8, x: 0, y: 4)
+                            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
 
                     Spacer(minLength: 40)
