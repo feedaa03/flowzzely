@@ -77,13 +77,20 @@ struct FlowerResultView: View {
                     .allowsHitTesting(false)
                 }
             }
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                SoundManager.shared.playSuccess()
-                showConfetti = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    showConfetti = false
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { dismiss() }) {
+                    Label("Back", systemImage: "chevron.left")
                 }
+            }
+        }
+        .onAppear {
+            SoundManager.shared.playSuccess()
+            showConfetti = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                showConfetti = false
             }
         }
     }

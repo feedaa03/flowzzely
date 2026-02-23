@@ -12,7 +12,9 @@ struct HomepageView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 24) {
-                    Text("Guess the flower from the picture")
+                    let allUnlocked = FlowerType.allCases.allSatisfy { DailyProgressManager.shared.isUnlocked($0) }
+                    
+                    Text(allUnlocked ? "You unlocked all the flowers!" : "Guess the flower from the picture")
                         .font(.system(size: 16, design: .serif))
                         .foregroundStyle(colorScheme == .dark ? .white : .color)
 
@@ -26,7 +28,7 @@ struct HomepageView: View {
                                 }
                             } label: {
                                 ZStack {
-                                    FlowerCard(imageName: "\(flower.rawValue) blur")
+                                    FlowerCard(imageName: unlocked ? "\(flower.rawValue)" : "\(flower.rawValue) blur")
                                     if !unlocked {
                                         Circle()
                                             .fill(Color.black.opacity(0.35))
