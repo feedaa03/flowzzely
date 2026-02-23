@@ -5,10 +5,8 @@ struct HomepageView: View {
     @State private var selectedFlower: FlowerType?
     @State private var showPuzzle = false
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var navManager = NavigationPathManager()
 
     var body: some View {
-        NavigationStack(path: $navManager.path) {
             ZStack {
                 (colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9"))
                     .ignoresSafeArea()
@@ -49,13 +47,11 @@ struct HomepageView: View {
             .navigationDestination(isPresented: $showPuzzle) {
                 if let selectedFlower {
                     PuzzleView(flower: selectedFlower)
-                        .environmentObject(navManager)
+                      
                 }
             }
         }
-        .environmentObject(navManager)
     }
-}
 
 #Preview {
     HomepageView()

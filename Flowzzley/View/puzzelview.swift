@@ -28,7 +28,7 @@ struct PuzzleView: View {
 
                     Text("Solve the puzzle")
                         .font(.system(size: 16, design: .serif))
-                        .foregroundColor(colorScheme == .dark ? .white : .color)
+                        .foregroundStyle(colorScheme == .dark ? Color.white : Color("color"))
 
                     LazyVGrid(columns: columns, spacing: 8) {
                         ForEach(viewModel.pieces) { piece in
