@@ -1,3 +1,10 @@
+//
+//  FlowerResultView.swift
+//  Flowzzely
+//
+//  Created by Feda on 23/02/2026.
+//
+
 import SwiftUI
 
 struct FlowerResultView: View {
@@ -5,48 +12,47 @@ struct FlowerResultView: View {
     @State private var showConfetti = false
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         ZStack {
             (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EDE0D9"))
                 .ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 0) {
                     VStack(spacing: 20) {
-                        
+
                         Text(flower.displayTitle)
                             .font(.system(size: 22, weight: .regular, design: .serif))
                             .foregroundStyle(Color.color)
                             .multilineTextAlignment(.center)
                             .padding(.top, 24)
                             .padding(.horizontal, 20)
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .fill(Color.white)
                                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
-                            
+
                             Image(flower.imageName)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 200)
                                 .padding(20)
                         }
-                        
                         .padding(.horizontal, 20)
-                        
+
                         Text(flower.description)
                             .font(.system(size: 15))
                             .foregroundStyle(Color.color)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
-                        
+
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Occasions")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundStyle(Color.color)
-                            
+
                             FlexibleChipsView(items: flower.occasions) { occasion in
                                 Text(occasion)
                                     .font(.system(size: 14, weight: .regular))
@@ -68,7 +74,7 @@ struct FlowerResultView: View {
                         .padding(.bottom, 16)
                     }
                 }
-                
+
                 if showConfetti {
                     GeometryReader { geo in
                         ConfettiView(size: geo.size)
@@ -83,9 +89,15 @@ struct FlowerResultView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: { dismiss() }) {
                     Label("Back", systemImage: "chevron.left")
+                        .foregroundStyle(Color.color)
                 }
             }
         }
+        .toolbarBackground(
+            colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EDE0D9"),
+            for: .navigationBar
+        )
+        .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             SoundManager.shared.playSuccess()
             showConfetti = true
@@ -94,12 +106,12 @@ struct FlowerResultView: View {
             }
         }
     }
-    
+
     // MARK: - Confetti
     struct ConfettiView: View {
         let size: CGSize
         @State private var particles: [ConfettiParticle] = []
-        
+
         var body: some View {
             ZStack {
                 ForEach(particles) { p in
@@ -114,7 +126,7 @@ struct FlowerResultView: View {
                 generateParticles()
             }
         }
-        
+
         func generateParticles() {
             let colors: [Color] = [.pink, .purple, .yellow, .green, .blue, .orange, .red]
             particles = (0..<80).map { i in
@@ -136,7 +148,7 @@ struct FlowerResultView: View {
             }
         }
     }
-    
+
     struct ConfettiParticle: Identifiable {
         let id: Int
         var x: CGFloat
@@ -145,32 +157,32 @@ struct FlowerResultView: View {
         var color: Color
         var opacity: Double
     }
-    
+
     // MARK: - FlexibleChipsView
     @MainActor
     struct FlexibleChipsView<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
         let items: Data
         let content: (Data.Element) -> Content
         @State private var totalHeight: CGFloat = .zero
-        
+
         init(items: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
             self.items = items
             self.content = content
         }
-        
+
         var body: some View {
             GeometryReader { geo in
-                let width = geo.size.width  // ✅ خذ القيمة هنا
+                let width = geo.size.width
                 self.generateContent(availableWidth: width)
             }
             .frame(height: totalHeight)
         }
-        
+
         private func generateContent(availableWidth: CGFloat) -> some View {
             var width = CGFloat.zero
             var height = CGFloat.zero
-            let itemsArray = Array(items)  // ✅ حوّلها لـ Array هنا
-            
+            let itemsArray = Array(items)
+
             return ZStack(alignment: .topLeading) {
                 ForEach(itemsArray, id: \.self) { item in
                     content(item)
@@ -203,7 +215,7 @@ struct FlowerResultView: View {
             }
         }
     }
-    
+
     private struct ChipsSizePreferenceKey: PreferenceKey {
         static let defaultValue: CGFloat = 0
         static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -211,6 +223,9 @@ struct FlowerResultView: View {
         }
     }
 }
+
 #Preview {
-    FlowerResultView(flower: .lavender)
+    NavigationStack {
+        FlowerResultView(flower: .lavender)
+    }
 }

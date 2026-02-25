@@ -1,3 +1,10 @@
+//
+//  PuzzleView.swift
+//  Flowzzely
+//
+//  Created by Feda on 23/02/2026.
+//
+
 import SwiftUI
 import AVFoundation
 
@@ -6,6 +13,7 @@ struct PuzzleView: View {
     @StateObject private var viewModel: PuzzleViewModel
     @State private var goToResult = false
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) var dismiss
 
     private let columns = [
         GridItem(.flexible()),
@@ -67,6 +75,14 @@ struct PuzzleView: View {
                 Spacer()
             }
             .padding()
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { dismiss() }) {
+                    Label("Back", systemImage: "chevron.left")
+                }
+            }
         }
         .navigationDestination(isPresented: $goToResult) {
             FlowerResultView(flower: viewModel.flower)
