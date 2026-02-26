@@ -12,6 +12,7 @@ struct FlowerResultView: View {
     @State private var showConfetti = false
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     var body: some View {
         ZStack {
@@ -28,6 +29,7 @@ struct FlowerResultView: View {
                             .multilineTextAlignment(.center)
                             .padding(.top, 24)
                             .padding(.horizontal, 20)
+                            .accessibilityAddTraits(.isHeader)
 
                         ZStack {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -39,6 +41,7 @@ struct FlowerResultView: View {
                                 .scaledToFit()
                                 .frame(height: 200)
                                 .padding(20)
+                                .accessibilityLabel("Image of a \(flower.title)")
                         }
                         .padding(.horizontal, 20)
 
@@ -47,11 +50,13 @@ struct FlowerResultView: View {
                             .foregroundStyle(Color.color)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
+                            .accessibilityLabel(flower.description)
 
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Occasions")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundStyle(Color.color)
+                                .accessibilityAddTraits(.isHeader)
 
                             FlexibleChipsView(items: flower.occasions) { occasion in
                                 Text(occasion)
@@ -67,6 +72,7 @@ struct FlowerResultView: View {
                                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                     )
+                                    .accessibilityLabel(occasion)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,12 +81,13 @@ struct FlowerResultView: View {
                     }
                 }
 
-                if showConfetti {
+                if showConfetti && !reduceMotion {
                     GeometryReader { geo in
                         ConfettiView(size: geo.size)
                     }
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                 }
             }
         }
@@ -91,6 +98,8 @@ struct FlowerResultView: View {
                     Label("Back", systemImage: "chevron.left")
                         .foregroundStyle(Color.color)
                 }
+                .accessibilityLabel("Go back")
+                .accessibilityHint("Returns to the puzzle")
             }
         }
         .toolbarBackground(
@@ -100,9 +109,11 @@ struct FlowerResultView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             SoundManager.shared.playSuccess()
-            showConfetti = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                showConfetti = false
+            if !reduceMotion {
+                showConfetti = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showConfetti = false
+                }
             }
         }
     }
