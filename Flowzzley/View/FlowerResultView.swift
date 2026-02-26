@@ -14,6 +14,12 @@ struct FlowerResultView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
+    private let brandColor = Color(red: 0.35, green: 0.25, blue: 0.22)
+
+    private var isLastFlower: Bool {
+        FlowerType.allCases.last == flower
+    }
+
     var body: some View {
         ZStack {
             (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EDE0D9"))
@@ -25,7 +31,7 @@ struct FlowerResultView: View {
 
                         Text(flower.displayTitle)
                             .font(.system(size: 22, weight: .regular, design: .serif))
-                            .foregroundStyle(Color.color)
+                            .foregroundStyle(brandColor)
                             .multilineTextAlignment(.center)
                             .padding(.top, 24)
                             .padding(.horizontal, 20)
@@ -47,7 +53,7 @@ struct FlowerResultView: View {
 
                         Text(flower.description)
                             .font(.system(size: 15))
-                            .foregroundStyle(Color.color)
+                            .foregroundStyle(brandColor)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
                             .accessibilityLabel(flower.description)
@@ -55,29 +61,28 @@ struct FlowerResultView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Occasions")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(Color.color)
+                                .foregroundStyle(brandColor)
                                 .accessibilityAddTraits(.isHeader)
 
-                            FlexibleChipsView(items: flower.occasions) { occasion in
-                                Text(occasion)
-                                    .font(.system(size: 14, weight: .regular))
-                                    .foregroundStyle(Color.primary)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .fill(colorScheme == .dark ? Color.color : Color.secondary.opacity(0.15))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                    )
-                                    .accessibilityLabel(occasion)
-                            }
+                            OccasionsWrapView(
+                                occasions: flower.occasions,
+                                colorScheme: colorScheme,
+                                brandColor: brandColor
+                            )
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 24)
-                        .padding(.bottom, 16)
+                        .padding(.bottom,30)
+
+                        if !isLastFlower {
+                            Text("🌸 Come back tomorrow to solve another puzzle")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(brandColor.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 16)
+                                .accessibilityLabel("Come back tomorrow to solve another puzzle")
+                        }
                     }
                 }
 
@@ -96,7 +101,7 @@ struct FlowerResultView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: { dismiss() }) {
                     Label("Back", systemImage: "chevron.left")
-                        .foregroundStyle(Color.color)
+                        .foregroundStyle(brandColor)
                 }
                 .accessibilityLabel("Go back")
                 .accessibilityHint("Returns to the puzzle")
@@ -117,120 +122,100 @@ struct FlowerResultView: View {
             }
         }
     }
+}
 
-    // MARK: - Confetti
-    struct ConfettiView: View {
-        let size: CGSize
-        @State private var particles: [ConfettiParticle] = []
+// MARK: - OccasionsWrapView
+private struct OccasionsWrapView: View {
+    let occasions: [String]
+    let colorScheme: ColorScheme
+    let brandColor: Color
 
-        var body: some View {
-            ZStack {
-                ForEach(particles) { p in
-                    Circle()
-                        .fill(p.color)
-                        .frame(width: p.size, height: p.size)
-                        .position(x: p.x, y: p.y)
-                        .opacity(p.opacity)
-                }
-            }
-            .onAppear {
-                generateParticles()
+    var body: some View {
+        var rows: [[String]] = []
+        var current: [String] = []
+        for (i, item) in occasions.enumerated() {
+            current.append(item)
+            if current.count == 2 || i == occasions.count - 1 {
+                rows.append(current)
+                current = []
             }
         }
 
-        func generateParticles() {
-            let colors: [Color] = [.pink, .purple, .yellow, .green, .blue, .orange, .red]
-            particles = (0..<80).map { i in
-                ConfettiParticle(
-                    id: i,
-                    x: CGFloat.random(in: 0...size.width),
-                    y: CGFloat.random(in: -100...200),
-                    size: CGFloat.random(in: 6...14),
-                    color: colors.randomElement()!,
-                    opacity: 1.0
-                )
-            }
-            withAnimation(.easeIn(duration: 2.5)) {
-                for i in particles.indices {
-                    particles[i].y += size.height + 200
-                    particles[i].x += CGFloat.random(in: -60...60)
-                    particles[i].opacity = 0
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(rows.indices, id: \.self) { rowIndex in
+                HStack(spacing: 8) {
+                    ForEach(rows[rowIndex], id: \.self) { occasion in
+                        Text(occasion)
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundStyle(Color.primary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(colorScheme == .dark ? brandColor : Color.secondary.opacity(0.15))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                            .accessibilityLabel(occasion)
+                    }
                 }
             }
         }
     }
+}
 
-    struct ConfettiParticle: Identifiable {
-        let id: Int
-        var x: CGFloat
-        var y: CGFloat
-        var size: CGFloat
-        var color: Color
-        var opacity: Double
+// MARK: - ConfettiParticle
+private struct ConfettiParticle: Identifiable {
+    let id: Int
+    var x: CGFloat
+    var y: CGFloat
+    var size: CGFloat
+    var color: Color
+    var opacity: Double
+}
+
+// MARK: - ConfettiView
+@MainActor
+private struct ConfettiView: View {
+    let size: CGSize
+    @State private var particles: [ConfettiParticle] = []
+
+    var body: some View {
+        ZStack {
+            ForEach(particles) { p in
+                Circle()
+                    .fill(p.color)
+                    .frame(width: p.size, height: p.size)
+                    .position(x: p.x, y: p.y)
+                    .opacity(p.opacity)
+            }
+        }
+        .onAppear { generateParticles() }
     }
 
-    // MARK: - FlexibleChipsView
-    @MainActor
-    struct FlexibleChipsView<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
-        let items: Data
-        let content: (Data.Element) -> Content
-        @State private var totalHeight: CGFloat = .zero
-
-        init(items: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
-            self.items = items
-            self.content = content
-        }
-
-        var body: some View {
-            GeometryReader { geo in
-                let width = geo.size.width
-                self.generateContent(availableWidth: width)
-            }
-            .frame(height: totalHeight)
-        }
-
-        private func generateContent(availableWidth: CGFloat) -> some View {
-            var width = CGFloat.zero
-            var height = CGFloat.zero
-            let itemsArray = Array(items)
-
-            return ZStack(alignment: .topLeading) {
-                ForEach(itemsArray, id: \.self) { item in
-                    content(item)
-                        .padding(.trailing, 8)
-                        .padding(.bottom, 8)
-                        .alignmentGuide(.leading) { d in
-                            if (abs(width - d.width) > availableWidth) {
-                                width = 0
-                                height -= d.height
-                            }
-                            let result = width
-                            if item == itemsArray.last { width = 0 } else { width -= d.width }
-                            return result
-                        }
-                        .alignmentGuide(.top) { d in
-                            let result = height
-                            if item == itemsArray.last { height = 0 }
-                            return result
-                        }
-                }
-            }
-            .background(
-                GeometryReader { innerGeo in
-                    Color.clear
-                        .preference(key: ChipsSizePreferenceKey.self, value: innerGeo.size.height)
-                }
+    private func generateParticles() {
+        let colors: [Color] = [.pink, .purple, .yellow, .green, .blue, .orange, .red]
+        particles = (0..<80).map { i in
+            ConfettiParticle(
+                id: i,
+                x: CGFloat.random(in: 0...size.width),
+                y: CGFloat.random(in: -100...200),
+                size: CGFloat.random(in: 6...14),
+                color: colors.randomElement()!,
+                opacity: 1.0
             )
-            .onPreferenceChange(ChipsSizePreferenceKey.self) { newHeight in
-                if totalHeight != newHeight { totalHeight = newHeight }
-            }
         }
-    }
-
-    private struct ChipsSizePreferenceKey: PreferenceKey {
-        static let defaultValue: CGFloat = 0
-        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-            value = max(value, nextValue())
+        let updated = particles.map { p -> ConfettiParticle in
+            var copy = p
+            copy.y += size.height + 200
+            copy.x += CGFloat.random(in: -60...60)
+            copy.opacity = 0
+            return copy
+        }
+        withAnimation(.easeIn(duration: 2.5)) {
+            particles = updated
         }
     }
 }
