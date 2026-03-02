@@ -16,7 +16,7 @@ struct StartView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                (colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9"))
+                (colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EFDFD8"))
                     .ignoresSafeArea()
 
                 VStack {

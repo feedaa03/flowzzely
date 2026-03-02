@@ -22,7 +22,7 @@ struct FlowerResultView: View {
 
     var body: some View {
         ZStack {
-            (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EDE0D9"))
+            (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EFDFD8"))
                 .ignoresSafeArea()
 
             ScrollView {

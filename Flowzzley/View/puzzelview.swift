@@ -127,7 +127,7 @@ struct PuzzleView: View {
 
     // MARK: - Helpers
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9")
+        colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EFDFD8")
     }
 
     private func handlePieceTap(_ piece: FlowerPuzzlePiece) {
