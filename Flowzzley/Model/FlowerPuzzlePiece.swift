@@ -1,3 +1,11 @@
+//
+//  FlowerPuzzelPiece.swift
+//  Flowzzely
+//
+//  Created by Feda  on 23/02/2026.
+//
+
+
 import Foundation
 
 // Duplicate removed; canonical definition lives in Puzzlemodel.swift

@@ -1,61 +1,61 @@
+//
+//  PuzzleViewModel.swift
+//  Flowzzely
+//
+//  Created by Feda on 23/02/2026.
+//
+
 import Foundation
 import SwiftUI
-internal import Combine
+import Combine
 
 @MainActor
-class PuzzleViewModel: ObservableObject {
-
-    @Published var pieces: [FlowerPuzzlePiece] = []
-    @Published var selectedPiece: FlowerPuzzlePiece?
-    @Published var isSolved: Bool = false
-
+final class PuzzleViewModel: ObservableObject {
+    
+    // MARK: - Published Properties
+    @Published private(set) var pieces: [FlowerPuzzlePiece] = []
+    @Published private(set) var selectedPiece: FlowerPuzzlePiece?
+    @Published private(set) var isSolved: Bool = false
+    
+    // MARK: - Properties
     let flower: FlowerType
-
+    
+    // MARK: - Initialization
     init(flower: FlowerType) {
         self.flower = flower
         loadPuzzle()
     }
-
+    
+    // MARK: - Public Methods
     func loadPuzzle() {
+        pieces = flower.pieces.shuffled()
         selectedPiece = nil
         isSolved = false
-        pieces = flower.pieces.shuffled()
     }
-
+    
     func tapPiece(_ piece: FlowerPuzzlePiece) {
         guard !isSolved else { return }
-
+        
         if let selected = selectedPiece {
-            swap(selected, piece)
+            swapPieces(selected, piece)
             selectedPiece = nil
             checkIfSolved()
         } else {
             selectedPiece = piece
         }
     }
-
-    private func swap(_ first: FlowerPuzzlePiece, _ second: FlowerPuzzlePiece) {
+    
+    // MARK: - Private Methods
+    private func swapPieces(_ first: FlowerPuzzlePiece, _ second: FlowerPuzzlePiece) {
         guard
             let firstIndex = pieces.firstIndex(of: first),
             let secondIndex = pieces.firstIndex(of: second)
-        else {
-            print("❌ swap فشل - ما لقى القطع")
-            return
-        }
-        print("✅ swap نجح: \(firstIndex) <-> \(secondIndex)")
+        else { return }
+        
         pieces.swapAt(firstIndex, secondIndex)
     }
-
-    func checkIfSolved() {
-        print("--- checkIfSolved ---")
-        for index in pieces.indices {
-            print("Position \(index): \(pieces[index].imageName) | correctIndex: \(pieces[index].correctIndex)")
-            if pieces[index].correctIndex != index {
-                print("❌ غلط في position \(index)")
-                return
-            }
-        }
-        print("✅ SOLVED!")
-        isSolved = true
+    
+    private func checkIfSolved() {
+        isSolved = pieces.indices.allSatisfy { pieces[$0].correctIndex == $0 }
     }
 }

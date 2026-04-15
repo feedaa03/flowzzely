@@ -30,9 +30,12 @@ struct PuzzleView: View {
     private let gridColumns = [GridItem(.flexible()), GridItem(.flexible())]
     private let brandColor = Color(red: 0.35, green: 0.25, blue: 0.22)
 
+    @Binding var showPuzzle: Bool
+
     // MARK: - Initialization
-    init(flower: FlowerType) {
+    init(flower: FlowerType, showPuzzle: Binding<Bool>) {
         _viewModel = StateObject(wrappedValue: PuzzleViewModel(flower: flower))
+        _showPuzzle = showPuzzle
     }
 
     // MARK: - Body
@@ -58,7 +61,7 @@ struct PuzzleView: View {
             }
         }
         .navigationDestination(isPresented: $goToResult) {
-            FlowerResultView(flower: viewModel.flower)
+            FlowerResultView(flower: viewModel.flower, showPuzzle: $showPuzzle)
         }
         .onReceive(viewModel.$isSolved, perform: handleSolvedChange)
     }
@@ -127,7 +130,7 @@ struct PuzzleView: View {
 
     // MARK: - Helpers
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EFDFD8")
+        colorScheme == .dark ? Color(hex: "#D29C9A") : Color(hex: "#EDE0D9")
     }
 
     private func handlePieceTap(_ piece: FlowerPuzzlePiece) {
@@ -161,6 +164,6 @@ extension Color {
 // MARK: - Preview
 #Preview {
     NavigationStack {
-        PuzzleView(flower: .lily)
+        PuzzleView(flower: .lily, showPuzzle: .constant(true))
     }
 }

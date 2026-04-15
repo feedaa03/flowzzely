@@ -9,9 +9,9 @@ import SwiftUI
 
 struct FlowerResultView: View {
     let flower: FlowerType
+    @Binding var showPuzzle: Bool
     @State private var showConfetti = false
     @Environment(\.colorScheme) var colorScheme
-    @Environment(\.dismiss) var dismiss
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     private let brandColor = Color(red: 0.35, green: 0.25, blue: 0.22)
@@ -22,7 +22,7 @@ struct FlowerResultView: View {
 
     var body: some View {
         ZStack {
-            (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EFDFD8"))
+            (colorScheme == .dark ? Color(hex: "D29C9A") : Color(hex: "#EDE0D9"))
                 .ignoresSafeArea()
 
             ScrollView {
@@ -72,16 +72,16 @@ struct FlowerResultView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 24)
-                        .padding(.bottom,30)
+                        .padding(.bottom, 8)
 
                         if !isLastFlower {
-                            Text("🌸 Come back tomorrow to solve another puzzle")
-                                .font(.system(size: 13, weight: .bold))
+                            Text("🌸 Come back at midnight to solve another puzzle")
+                                .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(brandColor.opacity(0.7))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 24)
                                 .padding(.bottom, 16)
-                                .accessibilityLabel("Come back tomorrow to solve another puzzle")
+                                .accessibilityLabel("Come back at midnight to solve another puzzle")
                         }
                     }
                 }
@@ -99,12 +99,15 @@ struct FlowerResultView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(action: { dismiss() }) {
-                    Label("Back", systemImage: "chevron.left")
-                        .foregroundStyle(brandColor)
+                Button(action: { showPuzzle = false }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "house")
+                        Text("Home")
+                    }
+                    .foregroundStyle(brandColor)
                 }
-                .accessibilityLabel("Go back")
-                .accessibilityHint("Returns to the puzzle")
+                .accessibilityLabel("Go to home")
+                .accessibilityHint("Returns to the flower selection")
             }
         }
         .toolbarBackground(
@@ -222,6 +225,6 @@ private struct ConfettiView: View {
 
 #Preview {
     NavigationStack {
-        FlowerResultView(flower: .lavender)
+        FlowerResultView(flower: .lavender, showPuzzle: .constant(true))
     }
 }

@@ -11,7 +11,7 @@ struct FlowzzleyApp: App {
         
         WindowGroup {
             NavigationStack {
-                StartView()
+                ContentView()
             }
         }
     }

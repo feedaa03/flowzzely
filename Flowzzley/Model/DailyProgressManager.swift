@@ -1,78 +1,129 @@
 //
 //  DailyProgressManager.swift
-//  Flowzzely
+//  Flowzzley
 //
 //  Created by Feda on 23/02/2026.
 //
 
 import Foundation
+import Combine
 import UserNotifications
 
-@MainActor
-final class DailyProgressManager {
+class DailyProgressManager: ObservableObject {
 
     // MARK: - Singleton
     static let shared = DailyProgressManager()
-    private init() {}
 
-    // MARK: - Private Properties
-    private let unlockedFlowerIndexKey = "UnlockedFlowerIndex"
+    // MARK: - Storage key
+    private let solvedDatesKey = "FlowerSolvedDates"
 
-    // MARK: - Public Properties
-    private(set) var unlockedIndex: Int {
-        get { UserDefaults.standard.integer(forKey: unlockedFlowerIndexKey) }
-        set { UserDefaults.standard.set(newValue, forKey: unlockedFlowerIndexKey) }
+    // MARK: - Timer
+    private var midnightTimer: Timer?
+
+    private init() {
+        scheduleMidnightRefresh()
     }
 
-    // MARK: - Public Methods
+    // MARK: - Solved dates  [flowerRawValue: timeIntervalSince1970]
+    private var solvedDates: [String: Double] {
+        get { UserDefaults.standard.dictionary(forKey: solvedDatesKey) as? [String: Double] ?? [:] }
+        set { UserDefaults.standard.set(newValue, forKey: solvedDatesKey) }
+    }
+
+    // MARK: - Public API
+
     func isUnlocked(_ flower: FlowerType) -> Bool {
-        return flowerOrder(of: flower) <= unlockedIndex
+        let index = FlowerType.allCases.firstIndex(of: flower) ?? 0
+
+        // الوردة الأولى دايماً مفتوحة
+        if index == 0 { return true }
+
+        // الوردة السابقة لازم تكون محلولة
+        let prevFlower = FlowerType.allCases[index - 1]
+        guard let solvedInterval = solvedDates[prevFlower.rawValue] else { return false }
+
+        // الساعة 12 AM بعد يوم الحل لازم تكون فاتت
+        let solvedDate = Date(timeIntervalSince1970: solvedInterval)
+        return Date() >= nextMidnight(after: solvedDate)
+    }
+
+    /// سبب قفل الوردة — nil تعني إنها مفتوحة
+    enum LockReason {
+        case previousNotSolved   // الوردة السابقة ما اتحلت بعد
+        case waitingForMidnight  // محلولة بس لسا ما صارت 12 AM
+    }
+
+    func lockReason(for flower: FlowerType) -> LockReason? {
+        guard !isUnlocked(flower) else { return nil }
+        let index = FlowerType.allCases.firstIndex(of: flower) ?? 0
+        if index == 0 { return nil }
+        let prevFlower = FlowerType.allCases[index - 1]
+        if solvedDates[prevFlower.rawValue] != nil {
+            return .waitingForMidnight
+        }
+        return .previousNotSolved
     }
 
     func markSolved(flower: FlowerType) {
-        let order = flowerOrder(of: flower)
-        guard order == unlockedIndex else { return }
-        unlockedIndex += 1
-        scheduleNextFlowerNotification()
+        var dates = solvedDates
+        guard dates[flower.rawValue] == nil else { return } // محلولة أصلاً
+        dates[flower.rawValue] = Date().timeIntervalSince1970
+        solvedDates = dates
+        scheduleNotification(for: flower)
+        objectWillChange.send()
     }
 
     func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    // MARK: - Private Helpers
-    private func flowerOrder(of flower: FlowerType) -> Int {
-        return FlowerType.allCases.firstIndex(of: flower) ?? .zero
+    // MARK: - Midnight refresh
+
+    private func scheduleMidnightRefresh() {
+        midnightTimer?.invalidate()
+        let delay = nextMidnight(after: Date()).timeIntervalSinceNow
+        midnightTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
+            self?.objectWillChange.send()
+            self?.scheduleMidnightRefresh() // جدول للمنتصف الليل القادم
+        }
     }
 
-    private func scheduleNextFlowerNotification() {
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["nextFlower"])
+    // MARK: - Notifications
 
-        // لا يوجد وردة جديدة — كل الورود اتفتحت
-        guard unlockedIndex < FlowerType.allCases.count else { return }
+    private func scheduleNotification(for solvedFlower: FlowerType) {
+        let allCases = FlowerType.allCases
+        guard let index = allCases.firstIndex(of: solvedFlower),
+              index + 1 < allCases.count else { return }
+
+        let nextFlower = allCases[index + 1]
+        let unlockDate = nextMidnight(after: Date())
 
         let content = UNMutableNotificationContent()
         content.title = "🌸 Flowzzley"
-        content.body = "Your new flower is ready to be solved!"
+        content.body = "\(nextFlower.rawValue.capitalized) is now ready to solve!"
         content.sound = .default
 
-        // الساعة 12 منتصف الليل من نفس اليوم اللي حلّت فيه
-        var dateComponents = DateComponents()
-        dateComponents.hour = 0
-        dateComponents.minute = 0
-        dateComponents.second = 0
+        let comps = Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: unlockDate
+        )
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
-        // نضيف يوم عشان نوصل لـ 12 AM اليوم التالي
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        let tomorrowComponents = Calendar.current.dateComponents([.year, .month, .day], from: tomorrow)
-        dateComponents.year = tomorrowComponents.year
-        dateComponents.month = tomorrowComponents.month
-        dateComponents.day = tomorrowComponents.day
-
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        let request = UNNotificationRequest(identifier: "nextFlower", content: content, trigger: trigger)
-
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["flower_\(nextFlower.rawValue)"])
+        let request = UNNotificationRequest(
+            identifier: "flower_\(nextFlower.rawValue)",
+            content: content,
+            trigger: trigger
+        )
         center.add(request)
+    }
+
+    // MARK: - Helpers
+
+    private func nextMidnight(after date: Date) -> Date {
+        let calendar = Calendar.current
+        let nextDay = calendar.date(byAdding: .day, value: 1, to: date)!
+        return calendar.startOfDay(for: nextDay)
     }
 }
