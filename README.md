@@ -5,6 +5,7 @@
 Flowzzley is an iOS app that teaches users the symbolism behind flowers through a daily puzzle experience. Each day, a new flower unlocks. Solve the tile puzzle to reveal the flower, then discover its meaning and the occasions it suits best.
  
 ---
+ [![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/sa/app/flowzzley/id6759537766)
  
 ## ✨ Features
  
@@ -14,14 +15,6 @@ Flowzzley is an iOS app that teaches users the symbolism behind flowers through 
 - 🔔 **Local Notifications** — Get reminded at midnight when your next puzzle is ready
 - 🎵 **Custom Sound Effects** — Tap and success sounds for a satisfying experience
 - ♿ **Full Accessibility Support** — VoiceOver, Dynamic Type, and Reduce Motion
----
- 
-## 📱 Screenshots
- 
-| Home | Puzzle | Result |
-|------|--------|--------|
-| ![Home](screenshots/home.png) | ![Puzzle](screenshots/puzzle.png) | ![Result](screenshots/result.png) |
- 
 ---
  
 ## 🛠 Tech Stack
